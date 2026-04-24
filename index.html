@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Quest Board</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Nunito+Sans:wght@400;500;600&family=Noto+Emoji&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div id="app">
+  <!-- Loading screen -->
+  <div id="loading-screen" class="screen active">
+    <div class="loading-content">
+      <div class="loading-logo">⭐</div>
+      <div class="loading-title">Quest Board</div>
+      <div class="loading-sub">Loading your adventure...</div>
+      <div class="loading-bar"><div class="loading-fill"></div></div>
+    </div>
+  </div>
+
+  <!-- Setup screen (first run) -->
+  <div id="setup-screen" class="screen">
+    <div class="setup-wrap">
+      <div class="setup-hero">🏰</div>
+      <h1 class="setup-title">Welcome to Quest Board!</h1>
+      <p class="setup-desc">A rewards app for adventurers. Enter your Firebase config to get started.</p>
+      <div class="setup-card">
+        <label class="setup-label">GitHub Repo</label>
+        <input class="setup-input" id="setup-repo" type="text" placeholder="yourusername/questboard" />
+        <label class="setup-label" style="margin-top:12px;">Personal Access Token</label>
+        <input class="setup-input" id="setup-token" type="password" placeholder="github_pat_..." />
+        <button class="setup-btn" id="setup-connect-btn" onclick="saveGitHubConfig()">Connect &amp; Start →</button>
+        <div id="setup-error" class="setup-error"></div>
+      </div>
+      <details class="setup-help">
+        <summary>How to connect to GitHub (free, 3 mins)</summary>
+        <ol>
+          <li>Make sure your Quest Board repo exists on GitHub</li>
+          <li>Go to <strong>github.com → Settings → Developer settings</strong></li>
+          <li>Click <strong>Personal access tokens → Tokens (classic) → Generate new token</strong></li>
+          <li>Give it a name like "Quest Board", set expiry to <strong>No expiration</strong></li>
+          <li>Tick the <strong>repo</strong> checkbox (full repo access)</li>
+          <li>Click <strong>Generate token</strong> and copy it immediately</li>
+          <li>Enter your repo name (e.g. <code>ryan/questboard</code>) and paste the token</li>
+          <li>Click Connect — your data saves as <code>data.json</code> in the repo</li>
+        </ol>
+      </details>
+      <button class="setup-skip" onclick="useLocalStorage()">Use local storage instead (single device only)</button>
+    </div>
+  </div>
+
+  <!-- Main app -->
+  <div id="main-screen" class="screen">
+
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-left">
+        <div class="header-title">Quest Board</div>
+      </div>
+      <div class="header-profiles" id="profile-tabs"></div>
+      <div id="save-indicator" style="font-size:11px;font-weight:700;transition:opacity 0.5s;opacity:0;white-space:nowrap;margin-left:auto;padding-right:4px;"></div>
+    </header>
+
+    <!-- Child view -->
+    <div id="child-view" class="view active">
+      <div class="child-hero" id="child-hero">
+        <div class="hero-avatar-wrap">
+          <canvas id="hero-avatar" width="100" height="100"></canvas>
+          <div class="hero-streak-badge" id="hero-streak"></div>
+        </div>
+        <div class="hero-info">
+          <div class="hero-name" id="hero-name"></div>
+          <div class="hero-stats" id="hero-stats"></div>
+        </div>
+      </div>
+
+      <!-- Streak days -->
+      <div class="streak-row" id="streak-row"></div>
+
+      <!-- Reward progress -->
+      <div class="next-reward" id="next-reward"></div>
+
+      <!-- Tabs -->
+      <div class="view-tabs">
+        <button class="vtab active" data-tab="tasks" onclick="switchViewTab('tasks',this)">Today's Quests</button>
+        <button class="vtab" data-tab="rewards" onclick="switchViewTab('rewards',this)">Rewards</button>
+        <button class="vtab" data-tab="history" onclick="switchViewTab('history',this)">History</button>
+      </div>
+
+      <div id="vtab-tasks" class="vtab-content active">
+        <div class="task-list" id="task-list"></div>
+        <div class="all-done-banner" id="all-done-banner" style="display:none">
+          <div class="all-done-icon">🎉</div>
+          <div class="all-done-text">All quests done! Amazing work!</div>
+        </div>
+      </div>
+
+      <div id="vtab-rewards" class="vtab-content">
+        <div class="rewards-grid" id="rewards-grid"></div>
+      </div>
+
+      <div id="vtab-history" class="vtab-content">
+        <div id="history-list"></div>
+      </div>
+    </div>
+
+    <!-- Parent view -->
+    <div id="parent-view" class="view">
+      <div class="parent-tabs">
+        <button class="ptab active" onclick="switchParentTab('overview',this)">Overview</button>
+        <button class="ptab" onclick="switchParentTab('tasks',this)">Tasks</button>
+        <button class="ptab" onclick="switchParentTab('rewards',this)">Rewards</button>
+        <button class="ptab" onclick="switchParentTab('children',this)">Children</button>
+        <button class="ptab" onclick="switchParentTab('summary',this)">Summary</button>
+      </div>
+
+      <div id="ptab-overview" class="ptab-content active">
+        <div class="parent-overview" id="parent-overview"></div>
+      </div>
+
+      <div id="ptab-tasks" class="ptab-content">
+        <div class="section-header">
+          <h3>Tasks</h3>
+          <button class="action-btn green" onclick="openAddTask()">+ Add task</button>
+        </div>
+        <div id="admin-task-list"></div>
+      </div>
+
+      <div id="ptab-rewards" class="ptab-content">
+        <div class="section-header">
+          <h3>Rewards</h3>
+          <button class="action-btn green" onclick="openAddReward()">+ Add reward</button>
+        </div>
+        <div id="admin-reward-list"></div>
+      </div>
+
+      <div id="ptab-children" class="ptab-content">
+        <div class="section-header">
+          <h3>Children</h3>
+          <button class="action-btn green" onclick="openAddChild()">+ Add child</button>
+        </div>
+        <div id="admin-children-list"></div>
+      </div>
+
+      <div id="ptab-summary" class="ptab-content">
+        <div id="weekly-summary"></div>
+      </div>
+    </div>
+
+  </div><!-- end main-screen -->
+</div><!-- end app -->
+
+<!-- MODALS -->
+<div id="modal-overlay" class="modal-overlay" onclick="closeModal(event)">
+
+  <!-- Add/Edit Task -->
+  <div class="modal" id="modal-task">
+    <div class="modal-header"><h3 id="modal-task-title">New Quest</h3><button class="modal-close" onclick="closeModal()">×</button></div>
+    <div class="modal-body">
+      <label class="flabel">Quest name</label>
+      <input class="finput" id="task-input-name" type="text" placeholder="e.g. Make the bed" />
+      <label class="flabel">Points reward</label>
+      <div class="pts-grid">
+        <button class="pts-opt" data-pts="5" onclick="selectPts(this)">5</button>
+        <button class="pts-opt" data-pts="10" onclick="selectPts(this)">10</button>
+        <button class="pts-opt selected" data-pts="15" onclick="selectPts(this)">15</button>
+        <button class="pts-opt" data-pts="20" onclick="selectPts(this)">20</button>
+        <button class="pts-opt" data-pts="25" onclick="selectPts(this)">25</button>
+        <button class="pts-opt" data-pts="30" onclick="selectPts(this)">30</button>
+      </div>
+      <label class="flabel">Icon</label>
+      <div class="icon-grid" id="task-icon-grid"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="fbtn cancel" onclick="closeModal()">Cancel</button>
+      <button class="fbtn save" onclick="saveTask()">Save quest</button>
+    </div>
+  </div>
+
+  <!-- Add/Edit Reward -->
+  <div class="modal" id="modal-reward">
+    <div class="modal-header"><h3 id="modal-reward-title">New Reward</h3><button class="modal-close" onclick="closeModal()">×</button></div>
+    <div class="modal-body">
+      <label class="flabel">Reward name</label>
+      <input class="finput" id="reward-input-name" type="text" placeholder="e.g. Movie night pick" />
+      <label class="flabel">Type</label>
+      <div class="type-grid">
+        <button class="type-opt selected" data-type="points" onclick="selectRewardType(this)">Points cost</button>
+        <button class="type-opt" data-type="streak5" onclick="selectRewardType(this)">5-day streak</button>
+        <button class="type-opt" data-type="streak7" onclick="selectRewardType(this)">7-day streak</button>
+      </div>
+      <div id="reward-cost-wrap">
+        <label class="flabel">Points cost</label>
+        <input class="finput" id="reward-input-cost" type="number" value="50" min="5" max="500" />
+      </div>
+      <label class="flabel">Icon</label>
+      <div class="icon-grid" id="reward-icon-grid"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="fbtn cancel" onclick="closeModal()">Cancel</button>
+      <button class="fbtn save" onclick="saveReward()">Save reward</button>
+    </div>
+  </div>
+
+  <!-- Add Child -->
+  <div class="modal" id="modal-child">
+    <div class="modal-header"><h3>Add adventurer</h3><button class="modal-close" onclick="closeModal()">×</button></div>
+    <div class="modal-body">
+      <label class="flabel">Name</label>
+      <input class="finput" id="child-input-name" type="text" placeholder="e.g. Jack" />
+      <label class="flabel">Age</label>
+      <input class="finput" id="child-input-age" type="number" value="8" min="3" max="17" />
+    </div>
+    <div class="modal-footer">
+      <button class="fbtn cancel" onclick="closeModal()">Cancel</button>
+      <button class="fbtn save" onclick="saveChild()">Add adventurer</button>
+    </div>
+  </div>
+
+  <!-- Avatar customiser -->
+  <div class="modal modal-wide" id="modal-avatar">
+    <div class="modal-header">
+      <h3>Customise avatar</h3>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="avatar-editor">
+        <div class="avatar-preview-wrap">
+          <canvas id="avatar-editor-canvas" width="160" height="160"></canvas>
+          <div class="avatar-preview-label">Your adventurer</div>
+        </div>
+        <div class="avatar-options">
+          <div class="avatar-category-tabs" id="avatar-cat-tabs"></div>
+          <div class="avatar-items-grid" id="avatar-items-grid"></div>
+          <div class="avatar-color-row">
+            <span class="flabel" style="margin:0">Colour</span>
+            <div class="color-swatches" id="avatar-colors"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="fbtn cancel" onclick="closeModal()">Cancel</button>
+      <button class="fbtn save" onclick="saveAvatar()">Save avatar</button>
+    </div>
+  </div>
+
+  <!-- Claim reward -->
+  <div class="modal modal-small" id="modal-claim">
+    <div class="modal-header"><h3>Claim reward!</h3><button class="modal-close" onclick="closeModal()">×</button></div>
+    <div class="modal-body" style="text-align:center">
+      <div id="claim-icon" style="font-size:56px;margin:8px 0"></div>
+      <div id="claim-name" style="font-size:20px;font-weight:700;margin-bottom:8px"></div>
+      <div id="claim-msg" style="color:#666;font-size:14px"></div>
+    </div>
+    <div class="modal-footer" style="justify-content:center">
+      <button class="fbtn save" onclick="confirmClaim()">Tell Mum/Dad I earned this!</button>
+    </div>
+  </div>
+
+
+  <!-- PIN entry -->
+  <div class="modal modal-small" id="modal-pin">
+    <div class="modal-header">
+      <h3>🔒 Parent area</h3>
+      <button class="modal-close" onclick="cancelPin()">×</button>
+    </div>
+    <div class="modal-body" style="text-align:center;padding:20px;">
+      <p style="color:var(--text-muted);font-size:14px;margin-bottom:20px;font-family:var(--font-body)">Enter your PIN to continue</p>
+      <div class="pin-dots" id="pin-dots">
+        <div class="pin-dot" id="pd0"></div>
+        <div class="pin-dot" id="pd1"></div>
+        <div class="pin-dot" id="pd2"></div>
+        <div class="pin-dot" id="pd3"></div>
+      </div>
+      <div id="pin-error" style="color:var(--coral);font-size:13px;font-weight:700;min-height:20px;margin:8px 0;"></div>
+      <div class="pin-pad">
+        <button class="pin-key" onclick="pinKey('1')">1</button>
+        <button class="pin-key" onclick="pinKey('2')">2</button>
+        <button class="pin-key" onclick="pinKey('3')">3</button>
+        <button class="pin-key" onclick="pinKey('4')">4</button>
+        <button class="pin-key" onclick="pinKey('5')">5</button>
+        <button class="pin-key" onclick="pinKey('6')">6</button>
+        <button class="pin-key" onclick="pinKey('7')">7</button>
+        <button class="pin-key" onclick="pinKey('8')">8</button>
+        <button class="pin-key" onclick="pinKey('9')">9</button>
+        <button class="pin-key pin-key-clear" onclick="pinClear()">⌫</button>
+        <button class="pin-key" onclick="pinKey('0')">0</button>
+        <button class="pin-key pin-key-ok" onclick="pinSubmit()">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PIN setup (first time or change) -->
+  <div class="modal modal-small" id="modal-pin-setup">
+    <div class="modal-header">
+      <h3 id="pin-setup-title">Set a parent PIN</h3>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body" style="text-align:center;padding:20px;">
+      <p id="pin-setup-msg" style="color:var(--text-muted);font-size:14px;margin-bottom:20px;font-family:var(--font-body)">Choose a 4-digit PIN for the parent area</p>
+      <div class="pin-dots" id="pin-setup-dots">
+        <div class="pin-dot" id="spd0"></div>
+        <div class="pin-dot" id="spd1"></div>
+        <div class="pin-dot" id="spd2"></div>
+        <div class="pin-dot" id="spd3"></div>
+      </div>
+      <div id="pin-setup-error" style="color:var(--coral);font-size:13px;font-weight:700;min-height:20px;margin:8px 0;"></div>
+      <div class="pin-pad">
+        <button class="pin-key" onclick="pinSetupKey('1')">1</button>
+        <button class="pin-key" onclick="pinSetupKey('2')">2</button>
+        <button class="pin-key" onclick="pinSetupKey('3')">3</button>
+        <button class="pin-key" onclick="pinSetupKey('4')">4</button>
+        <button class="pin-key" onclick="pinSetupKey('5')">5</button>
+        <button class="pin-key" onclick="pinSetupKey('6')">6</button>
+        <button class="pin-key" onclick="pinSetupKey('7')">7</button>
+        <button class="pin-key" onclick="pinSetupKey('8')">8</button>
+        <button class="pin-key" onclick="pinSetupKey('9')">9</button>
+        <button class="pin-key pin-key-clear" onclick="pinSetupClear()">⌫</button>
+        <button class="pin-key" onclick="pinSetupKey('0')">0</button>
+        <button class="pin-key pin-key-ok" onclick="pinSetupSubmit()">OK</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast"></div>
+
+<!-- Confetti canvas -->
+<canvas id="confetti-canvas" class="confetti-canvas"></canvas>
+
+<script src="version.js"></script>
+<script src="icons.js"></script>
+<script src="avatar.js"></script>
+<script src="storage.js"></script>
+<script src="app.js"></script>
+
+</body>
+</html>
