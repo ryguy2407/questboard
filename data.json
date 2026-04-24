@@ -17,6 +17,24 @@
       "dailyLog": {},
       "streak": 0,
       "streakDays": {}
+    },
+    {
+      "id": "child_102",
+      "name": "Theo",
+      "age": 11,
+      "points": 0,
+      "avatar": {
+        "bg": "bg_stars",
+        "body": "body_link",
+        "face": "face_happy",
+        "head": "head_crown",
+        "extra": "ex_sword",
+        "color": "#E1F5EE"
+      },
+      "completedToday": {},
+      "dailyLog": {},
+      "streak": 0,
+      "streakDays": {}
     }
   ],
   "tasks": [
@@ -81,6 +99,6 @@
       "cost": 0
     }
   ],
-  "nextId": 101,
+  "nextId": 102,
   "lastResetDate": "2026-04-25"
 }
