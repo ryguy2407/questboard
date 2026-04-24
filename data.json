@@ -1,0 +1,67 @@
+{
+  "children": [],
+  "tasks": [
+    {
+      "id": "t1",
+      "name": "Make the bed",
+      "pts": 10,
+      "icon": "bed"
+    },
+    {
+      "id": "t2",
+      "name": "15 mins reading",
+      "pts": 15,
+      "icon": "book"
+    },
+    {
+      "id": "t3",
+      "name": "Homework session",
+      "pts": 20,
+      "icon": "pencil"
+    },
+    {
+      "id": "t4",
+      "name": "Pack school bag",
+      "pts": 5,
+      "icon": "backpack"
+    },
+    {
+      "id": "t5",
+      "name": "Tidy room",
+      "pts": 10,
+      "icon": "broom"
+    }
+  ],
+  "rewards": [
+    {
+      "id": "r1",
+      "name": "Choose dinner",
+      "icon": "pizza",
+      "type": "points",
+      "cost": 50
+    },
+    {
+      "id": "r2",
+      "name": "Extra screen time",
+      "icon": "phone",
+      "type": "points",
+      "cost": 80
+    },
+    {
+      "id": "r3",
+      "name": "Movie night pick",
+      "icon": "film",
+      "type": "streak5",
+      "cost": 0
+    },
+    {
+      "id": "r4",
+      "name": "Outing of choice",
+      "icon": "beach",
+      "type": "streak7",
+      "cost": 0
+    }
+  ],
+  "nextId": 100,
+  "lastResetDate": "2026-04-25"
+}
