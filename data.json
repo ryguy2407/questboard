@@ -1,5 +1,24 @@
 {
-  "children": [],
+  "children": [
+    {
+      "id": "child_101",
+      "name": "Elliot",
+      "age": 7,
+      "points": 0,
+      "avatar": {
+        "bg": "bg_stars",
+        "body": "body_link",
+        "face": "face_happy",
+        "head": "head_crown",
+        "extra": "ex_sword",
+        "color": "#E1F5EE"
+      },
+      "completedToday": {},
+      "dailyLog": {},
+      "streak": 0,
+      "streakDays": {}
+    }
+  ],
   "tasks": [
     {
       "id": "t1",
@@ -62,6 +81,6 @@
       "cost": 0
     }
   ],
-  "nextId": 100,
+  "nextId": 101,
   "lastResetDate": "2026-04-25"
 }
